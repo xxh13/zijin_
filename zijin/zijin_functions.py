@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # encoding: utf-8
-from datetime import datetime, timedelta
-from bson.objectid import ObjectId
+from datetime import datetime, timedelta, date
 import os
 
 from zijin_objects import Predict, Order
@@ -14,10 +13,7 @@ from zijin_config import LOG_PREFIX, LOG_DIR, ORDER_PREFIX, ORDER_DIR, LOG_SUFFI
 
 class SimpleResource(object):
     def __init__(self, id_=None):
-        if id_ is None:
-            self.id = ObjectId()
-        else:
-            self.id = id_
+        self.id = id_
 
 
 class Strategy(object):
@@ -90,12 +86,22 @@ class Strategy(object):
         order = Order(**arg_dict)
         zijin_order(os.path.join(ORDER_DIR, ORDER_PREFIX + date2str(trade_date) + ORDER_SUFFIX), order)
 
-    def get_market_data(self, date, type='bar'):
-        return []
+    def get_market_data(self, trade_date, type='bar'):
+        if not isinstance(trade_date, date):
+            bars = []
+        else:
+            if isinstance(trade_date, datetime):
+                trade_date = trade_date.date()
+            try:
+                bars = get_market_data(start_date=trade_date, end_date=trade_date + timedelta(days=1))[trade_date]
+            except KeyError:
+                bars = []
+        return [vars(bar) for bar in bars]
 
     def get_time(self):
         if self._datetime is None:
             now_datetime = datetime.now()
+            self._datetime = now_datetime
         else:
             now_datetime = self._datetime
 
@@ -145,12 +151,12 @@ class StrategyManager(object):
         print 'run strategy.....'
         strategy.on_init()
         while current_date < end_date:
-            print 'date {:s} start'.format(date2str(current_date))
             try:
                 bars = market_date[current_date]
             except KeyError:
                 current_date = current_date + timedelta(days=1)
                 continue
+            print 'date {:s} start'.format(date2str(current_date))
             strategy.datetime_update(datetime.combine(current_date, datetime.min.time()), current_date)
             if not start:
                 strategy.on_start()
@@ -162,5 +168,5 @@ class StrategyManager(object):
             for bar in bars:
                 strategy.datetime_update(bar.datetime, current_date)
                 strategy.on_bar(bar)
-            current_date = current_date + timedelta(days=1)
             print 'date {:s} end'.format(date2str(current_date))
+            current_date = current_date + timedelta(days=1)

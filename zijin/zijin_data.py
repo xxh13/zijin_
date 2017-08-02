@@ -5,6 +5,8 @@
 from collections import defaultdict
 from datetime import datetime
 import csv
+import inspect
+import os
 
 from zijin_objects import Bar
 
@@ -31,9 +33,11 @@ def line_to_bar(line_content):
 
 # the data.csv is provided automatically
 def get_market_data(start_date, end_date):
-    path = 'data.csv'
+    print 'loading data .....'
+    dir_name = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+    path = os.path.join(dir_name, 'data.csv')
     market_data = defaultdict(list)
-    with open(path, 'rb') as csv_file:
+    with open(path, 'r') as csv_file:
         content = csv.reader(csv_file)
         next(content, None)
         for line in content:
