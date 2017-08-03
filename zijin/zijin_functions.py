@@ -4,7 +4,7 @@ from datetime import datetime, timedelta, date
 import os
 
 from zijin_objects import Predict, Order
-from zijin_util import error_decorator, date2str
+from zijin_util import date2str
 from zijin_log import zijin_log, zijin_order, zijin_predict
 from zijin_data import get_market_data
 from zijin_config import LOG_PREFIX, LOG_DIR, ORDER_PREFIX, ORDER_DIR, LOG_SUFFIX, ORDER_SUFFIX, \
@@ -34,8 +34,8 @@ class Strategy(object):
         if self._script_mode == 'predict':
             self._predict_format = predict_format
 
-        for name in self.callback_function_names:
-            setattr(self, name, error_decorator(getattr(self, name)))
+        # for name in self.callback_function_names:
+        #     setattr(self, name, error_decorator(getattr(self, name)))
         for name in self.provide_function_names:
             setattr(function, name, getattr(self, name))
 

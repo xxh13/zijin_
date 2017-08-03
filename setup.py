@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(name='zijin',
-      version='1.5',
+      version='1.6',
       description='zijin test package',
       url='https://github.com/xxh13/zijin_.git',
       author='xxh13',
